@@ -1,0 +1,9 @@
+[Unit]
+Description=Check iCloud mail every ten minutes
+[Timer]
+OnBootSec=60
+OnUnitInactiveSec=10min
+RandomizedDelaySec=15
+Unit=mailbridge-index.service
+[Install]
+WantedBy=timers.target

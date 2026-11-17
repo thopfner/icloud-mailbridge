@@ -1,0 +1,22 @@
+# Runtime and local configuration
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+*.db*
+*.sqlite*
+*.key
+*.pem
+*.fernet
+.env
+.env.*
+!.env.example
+config.json
+state/
+backups/
+*.log
+*.bundle
+.DS_Store
+# Secret scanner reports may contain sensitive findings
+gitleaks*.json

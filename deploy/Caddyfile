@@ -1,0 +1,60 @@
+{
+	admin off
+	servers {
+		strict_sni_host on
+		max_header_size 32KB
+		timeouts {
+			read_header 5s
+			read_body 15s
+			idle 60s
+		}
+	}
+}
+(mailbridge_backend) {
+	reverse_proxy 127.0.0.1:8765 {
+		header_up -Forwarded
+		header_up -X-Real-IP
+	}
+}
+mail.example.com {
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		Referrer-Policy no-referrer
+		Cache-Control no-store
+		X-Frame-Options DENY
+		-Server
+	}
+	request_body {
+		max_size 128KB
+	}
+	@public_read {
+		method GET HEAD
+		path /.well-known/oauth-authorization-server /.well-known/oauth-protected-resource /.well-known/oauth-protected-resource/mcp /privacy
+	}
+	@public_oauth {
+		method POST
+		path /oauth/token /oauth/revoke /oauth/register
+	}
+	@public_mcp {
+		method GET POST DELETE
+		path /mcp /mcp/
+	}
+	# Explicit trusted source networks, managed outside the repository.
+	import /etc/caddy/mailbridge-admin.caddy
+	route {
+		handle @public_read {
+			import mailbridge_backend
+		}
+		handle @public_oauth {
+			import mailbridge_backend
+		}
+		handle @public_mcp {
+			import mailbridge_backend
+		}
+		handle @owner {
+			import mailbridge_backend
+		}
+		respond "Not found" 404
+	}
+}

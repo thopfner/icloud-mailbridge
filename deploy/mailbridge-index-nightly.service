@@ -1,0 +1,35 @@
+[Unit]
+Description=Nightly iCloud index reconciliation and integrity check
+After=network-online.target mailbridge.service
+Wants=network-online.target
+[Service]
+Type=oneshot
+User=mailbridge
+Group=mailbridge
+WorkingDirectory=/opt/mailbridge
+ExecStart=/opt/mailbridge/.venv/bin/python /opt/mailbridge/mail_index.py --full
+LoadCredential=master.key:/etc/mailbridge/master.key
+Environment=PYTHONDONTWRITEBYTECODE=1
+UMask=0077
+TimeoutStartSec=330
+Nice=10
+CPUQuota=40%
+MemoryMax=220M
+TasksMax=24
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+ProtectClock=true
+RestrictNamespaces=true
+RestrictSUIDSGID=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+ReadWritePaths=/var/lib/mailbridge
+ReadOnlyPaths=/var/lib/mailbridge/mailbridge.db
+ReadOnlyPaths=-/var/lib/mailbridge/mailbridge.db-wal

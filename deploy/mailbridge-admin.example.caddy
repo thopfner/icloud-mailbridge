@@ -1,0 +1,3 @@
+# Replace this documentation-only address with your trusted device VPN /32.
+# Use the same address in config.json admin_networks; never allow 0.0.0.0/0.
+@owner remote_ip 192.0.2.10/32

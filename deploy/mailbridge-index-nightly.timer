@@ -1,0 +1,9 @@
+[Unit]
+Description=Reconcile Mailbridge index nightly
+[Timer]
+OnCalendar=*-*-* 03:15:00 Europe/Amsterdam
+Persistent=true
+RandomizedDelaySec=60
+Unit=mailbridge-index-nightly.service
+[Install]
+WantedBy=timers.target

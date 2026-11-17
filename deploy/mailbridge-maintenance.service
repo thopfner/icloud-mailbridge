@@ -1,0 +1,9 @@
+[Unit]
+Description=Prune Mailbridge expired security records
+[Service]
+User=mailbridge
+Group=mailbridge
+LoadCredential=master.key:/etc/mailbridge/master.key
+Type=oneshot
+ExecStart=/opt/mailbridge/bin/mailbridge maintenance
+UMask=0077

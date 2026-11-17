@@ -1,0 +1,3 @@
+#!/bin/sh
+cd /opt/mailbridge
+exec /opt/mailbridge/.venv/bin/python /opt/mailbridge/manage.py "$@"

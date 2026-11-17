@@ -1,0 +1,44 @@
+[Unit]
+Description=Private iCloud Mailbridge MCP
+After=network-online.target
+Wants=network-online.target
+[Service]
+Type=simple
+User=mailbridge
+Group=mailbridge
+WorkingDirectory=/opt/mailbridge
+ExecStart=/opt/mailbridge/.venv/bin/uvicorn main:application --host 127.0.0.1 --port 8765 --workers 1 --no-access-log --proxy-headers --forwarded-allow-ips 127.0.0.1 --limit-concurrency 24 --timeout-keep-alive 5
+Environment=PYTHONDONTWRITEBYTECODE=1
+LoadCredential=master.key:/etc/mailbridge/master.key
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectProc=invisible
+ProcSubset=pid
+RestrictNamespaces=true
+MemoryDenyWriteExecute=true
+ReadWritePaths=/var/lib/mailbridge
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+LockPersonality=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+SystemCallFilter=~@privileged @resources
+MemoryMax=400M
+TasksMax=64
+LimitNOFILE=1024
+[Install]
+WantedBy=multi-user.target
