@@ -170,3 +170,17 @@ previous source/configuration and backup for rollback. Refresh MCP tools when
 descriptions or schemas change.
 
 See SECURITY_OPERATIONS.md for revocation, recovery and trust boundaries.
+
+## Using a deployment agent
+
+Give the agent administrator access to your own fresh Linux VPS and point it
+to this guide. Have it check Python 3.14 availability before creating the
+virtual environment, verify SQLCipher returns a version, and run the suite with
+the pinned dependencies. Use the Python 3.14 interpreter explicitly if your
+distribution's default python3 is older.
+
+The agent can configure the service, DNS and private access where you grant
+the required permissions. Take over in a private terminal for owner password,
+authenticator enrollment and Apple app-specific password entry. Complete the
+ChatGPT OAuth consent in your browser over the trusted network. Confirm a
+synthetic reply draft appears in Apple Mail before using your real conversations.
