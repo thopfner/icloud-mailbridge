@@ -1,3 +1,4 @@
+from pathlib import Path
 import base64,secrets,pyotp,contextlib
 from urllib.parse import urlparse,parse_qs
 from starlette.testclient import TestClient
@@ -223,6 +224,10 @@ def test_browser_form_referrer_policy_preserves_same_origin(client):
  response=client.get('/login',base_url=BASE)
  assert response.status_code==200
  assert response.headers['Referrer-Policy']=='same-origin'
+ proxy = (Path(__file__).resolve().parents[1] / 'deploy' / 'Caddyfile').read_text()
+ assert [line.split() for line in proxy.splitlines() if line.strip().startswith('Referrer-Policy ')] == [
+  ['Referrer-Policy', response.headers['Referrer-Policy']]
+ ]
  assert "form-action 'self'" in response.headers['Content-Security-Policy']
 
 def test_null_origin_is_still_rejected(remote_client):
