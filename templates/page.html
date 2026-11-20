@@ -3,7 +3,10 @@
 {% if message %}<p class="notice" role="alert">{{ message }}</p>{% endif %}
 {% if mode=='login' %}
 <p>Use your Mailbridge password and authenticator. Never enter your Apple Account password here.</p>
-<form method="post"><input type="hidden" name="csrf" value="{{ csrf }}"><label for="password">Mailbridge password</label><input id="password" name="password" type="password" autocomplete="current-password" maxlength="1024" required><label for="otp">Fresh authenticator code</label><input id="otp" name="otp" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required><button>Sign in</button></form>
+<form method="post"><input type="hidden" name="csrf" value="{{ csrf }}"><label for="password">Mailbridge password</label><input id="password" name="password" type="password" autocomplete="current-password" maxlength="1024" required><label for="otp">Fresh authenticator code</label><input id="otp" name="otp" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required>{% if can_remember %}
+<label><input type="checkbox" name="remember" value="yes"> Keep me signed in for 30 days on this private device</label>
+{% endif %}<button>Sign in</button></form>
+{% if signed_in %}<form method="post" action="/logout"><input type="hidden" name="csrf" value="{{ csrf }}"><button>Sign out of this browser</button></form>{% endif %}
 {% elif mode=='dashboard' %}
 <p class="notice">iCloud: {{ 'connected' if configured else 'not connected' }}. Drafts sync to iCloud. Review and explicitly send in ChatGPT without signing in again. Read/unread, flags, archive, Trash and moves also work directly in ChatGPT.</p>
 <h2>Connect ChatGPT</h2><p>Add a custom MCP server with OAuth authentication:</p><pre>{{ resource }}</pre><p>No API key or Apple password goes into ChatGPT. Choose the permissions you need during authorization.</p>

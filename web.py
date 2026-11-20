@@ -3,10 +3,23 @@ from flask import request,session,redirect,render_template,abort,jsonify
 from urllib.parse import urlencode
 from authlib.oauth2.rfc6749.errors import OAuth2Error
 from core import *
+from access_policy import parse_networks
+from ipaddress import ip_address
 import oauth,mail
+
+REMEMBER_NETWORKS = parse_networks(CONFIG.get('remember_session_networks', []))
+
+def trusted_session_peer():
+ try:
+  peer = ip_address(request.remote_addr)
+ except (TypeError, ValueError):
+  return None
+ return str(peer) if any(peer in network for network in REMEMBER_NETWORKS) else None
 
 def csrf(): return session.setdefault('csrf',secrets.token_urlsafe(32))
 def current_owner():
+ if session.permanent and (not session.get('peer') or trusted_session_peer() != session['peer']):
+  return None
  raw=session.get('sid','')
  row=db.session.get(WebSession,digest(raw)) if raw else None
  owner=db.session.get(Owner,1)
@@ -82,11 +95,16 @@ def login():
    abort(429)
   if verify_owner(request.form.get('password',''),request.form.get('otp','')):
    raw=secrets.token_urlsafe(32); owner=db.session.get(Owner,1)
-   db.session.add(WebSession(id=digest(raw),expires=now()+1200,epoch=owner.epoch))
+   peer = trusted_session_peer() if request.form.get('remember') == 'yes' else None
+   lifetime = int(app.permanent_session_lifetime.total_seconds()) if peer else 1200
+   db.session.add(WebSession(id=digest(raw),expires=now()+lifetime,epoch=owner.epoch))
    db.session.commit(); session.clear(); session['sid']=raw; csrf()
+   if peer:
+    session.permanent = True
+    session['peer'] = peer
    audit('owner_login'); return redirect(next_path)
   audit('login_failed'); message='Sign-in failed. Check your password and use a fresh authenticator code.'
- return render_template('page.html',title='Sign in',mode='login',message=message,csrf=csrf())
+ return render_template('page.html',title='Sign in',mode='login',message=message,csrf=csrf(),can_remember=bool(trusted_session_peer()),signed_in=bool(current_owner()))
 
 @app.post('/logout')
 def logout():

@@ -234,3 +234,39 @@ def test_null_origin_is_still_rejected(remote_client):
  response=remote_client.post('/login',headers={'Origin':'null'},data={'csrf':'fake'})
  assert response.status_code==403
  assert response.json()['error']=='invalid_origin'
+
+
+@pytest.mark.parametrize('trusted, opt_in, persistent', [(True, True, True), (False, True, False), (True, False, False)])
+def test_remembered_sign_in(client, monkeypatch, trusted, opt_in, persistent):
+ import web
+ from ipaddress import ip_network
+ monkeypatch.setattr(web, 'REMEMBER_NETWORKS', (ip_network('192.0.2.0/24'),))
+ peer = {'REMOTE_ADDR': '192.0.2.1' if trusted else '198.51.100.1'}
+ def get(path, address=peer):
+  return client.get(path, base_url=BASE, environ_overrides=address)
+ def post(path, data):
+  return client.post(path, base_url=BASE, headers={'Origin': BASE}, environ_overrides=peer, data=data)
+ assert (b'name="remember"' in get('/login').data) == trusted
+ with client.session_transaction(base_url=BASE) as state:
+  csrf = state['csrf']
+ response = post('/login', {'csrf': csrf, 'password': 'test-password-long-enough',
+                            'otp': pyotp.TOTP('JBSWY3DPEHPK3PXP').now(), 'remember': 'yes' if opt_in else ''})
+ assert response.status_code == 302
+ assert ('Expires=' in response.headers['Set-Cookie']) == persistent
+ with app.app_context():
+  deadline = WebSession.query.one().expires
+  lifetime = 30*86400 if persistent else 1200
+  assert lifetime-10 <= deadline-now() <= lifetime
+ if persistent:
+  assert get('/', {'REMOTE_ADDR': '192.0.2.2'}).status_code == 302
+  monkeypatch.setattr(web, 'now', lambda: deadline-1)
+  assert get('/').status_code == 200
+  monkeypatch.setattr(web, 'now', lambda: deadline)
+  assert get('/').status_code == 302
+  monkeypatch.setattr(web, 'now', now)
+ assert get('/').status_code == 200
+ with client.session_transaction(base_url=BASE) as state:
+  csrf = state['csrf']
+ assert post('/logout', {'csrf': csrf}).status_code == 302
+ with app.app_context():
+  assert WebSession.query.count() == 0

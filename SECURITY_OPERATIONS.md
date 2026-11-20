@@ -80,3 +80,9 @@ session. With Caddy admin off, validate then restart Caddy rather than reload.
 - Check VPN device/key expiry, OAuth revocation and administrator access.
 - Verify public owner routes remain denied and unauthenticated MCP rejected.
 - Review metadata-only audit records without exposing mail content.
+
+## Remembered browser sessions
+
+Set `remember_session_networks` to an array of trusted private ingress CIDRs to offer a 30-day sign-in checkbox after password and authenticator verification. The default is empty. Only include peers whose traffic is restricted to the intended private network. Use the address observed by the application after trusted proxy processing. Devices behind the same gateway can share that address.
+
+The server checks the peer address, absolute expiration and owner revocation on each authenticated request. Closing the browser preserves an opted-in cookie. Signing out removes the server session. Revoking all access invalidates every session. Ordinary sign-ins expire after 20 minutes.

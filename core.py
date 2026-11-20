@@ -21,6 +21,7 @@ app = Flask(__name__)
 app.config.update(SECRET_KEY=hmac.new(KEY,b'web-session',hashlib.sha256).digest(),
  SQLALCHEMY_DATABASE_URI='sqlite:///'+str(STATE/'mailbridge.db'),
  SQLALCHEMY_ENGINE_OPTIONS={'connect_args':{'timeout':20}},
+ PERMANENT_SESSION_LIFETIME=30*24*60*60, SESSION_REFRESH_EACH_REQUEST=False,
  SESSION_COOKIE_NAME='__Host-mailbridge',SESSION_COOKIE_SECURE=True,
  SESSION_COOKIE_HTTPONLY=True,SESSION_COOKIE_SAMESITE='Lax',
  MAX_CONTENT_LENGTH=131072,TRUSTED_HOSTS=[BASE.split('/')[2]],
